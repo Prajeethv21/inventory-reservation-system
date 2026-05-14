@@ -56,14 +56,13 @@ Confirm and release are also concurrency-safe by using conditional updates on th
 
 ## Reservation expiry
 
-Expired reservations are released by `releaseExpiredReservations`, which runs on every API call. A Vercel cron endpoint also triggers the same cleanup.
+Expired reservations are released by `releaseExpiredReservations`, which runs on every API call. This lazy cleanup is the primary expiry mechanism in the demo.
+
+There is also a cron endpoint that triggers the same cleanup for production-style automation:
 
 - Cron route: `GET /api/cron/expire` (protected)
-- Schedule: every 5 minutes (configured in `vercel.json`)
 
-Set `CRON_SECRET` in the environment and configure the cron to send `Authorization: Bearer <CRON_SECRET>` (or `x-cron-secret`) for access.
-
-This keeps the demo consistent and shows the production-style automation path.
+Automatic scheduling is disabled in `vercel.json` to keep Hobby/free-tier deployments valid (Hobby only allows daily cron jobs). If you are on a paid plan, you can add your own cron schedule and set `CRON_SECRET` so the job can call the endpoint with `Authorization: Bearer <CRON_SECRET>` (or `x-cron-secret`).
 
 ## Idempotency (bonus)
 
