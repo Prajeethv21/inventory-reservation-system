@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import getPrisma from "@/lib/db";
 import { confirmReservation } from "@/lib/reservations";
 import {
   hashRequestBody,
@@ -24,6 +24,7 @@ export async function POST(
       ?.trim();
     const endpoint = `POST /api/reservations/${id}/confirm`;
     const requestHash = hashRequestBody({ id });
+    const prisma = getPrisma();
 
   if (idempotencyKey) {
     const existing = await readIdempotencyResult(

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import getPrisma from "@/lib/db";
 import { getReservationById, releaseExpiredReservations } from "@/lib/reservations";
 
 export async function GET(
@@ -16,7 +17,8 @@ export async function GET(
 
     await releaseExpiredReservations();
 
-    const reservation = await getReservationById(id);
+    const prisma = getPrisma();
+    const reservation = await getReservationById(id, prisma);
     if (!reservation) {
       return NextResponse.json(
         { error: "Reservation not found." },

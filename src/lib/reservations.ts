@@ -1,5 +1,5 @@
-import { Prisma, ReservationStatus } from "@prisma/client";
-import prisma from "./db";
+import { Prisma, PrismaClient, ReservationStatus } from "@prisma/client";
+import getPrisma from "./db";
 
 const DEFAULT_TTL_MINUTES = 1;
 
@@ -37,7 +37,7 @@ function mapReservationErrorAfterAttempt(
 }
 
 export async function releaseExpiredReservations(
-  client: Prisma.TransactionClient | typeof prisma = prisma
+  client: Prisma.TransactionClient | PrismaClient = getPrisma()
 ) {
   const expired = await client.$queryRaw<ExpiredReservationRow[]>`
     UPDATE "Reservation"
@@ -71,8 +71,11 @@ export async function releaseExpiredReservations(
   return expired.length;
 }
 
-export async function getReservationById(id: string) {
-  return prisma.reservation.findUnique({
+export async function getReservationById(
+  id: string,
+  client: Prisma.TransactionClient | PrismaClient = getPrisma()
+) {
+  return client.reservation.findUnique({
     where: { id },
     include: { product: true, warehouse: true },
   });
@@ -85,6 +88,7 @@ export async function createReservation(params: {
   ttlMinutes?: number;
 }) {
   const ttlMinutes = params.ttlMinutes ?? DEFAULT_TTL_MINUTES;
+  const prisma = getPrisma();
 
   return prisma.$transaction(async (tx) => {
     await releaseExpiredReservations(tx);
@@ -134,6 +138,8 @@ export async function createReservation(params: {
 }
 
 export async function confirmReservation(id: string) {
+  const prisma = getPrisma();
+
   return prisma.$transaction(async (tx) => {
     await releaseExpiredReservations(tx);
 
@@ -228,7 +234,12 @@ export async function confirmReservation(id: string) {
   });
 }
 
-export async function releaseReservation(id: string) {
+export async function releaseReservation(
+  id: string,
+  client: PrismaClient = getPrisma()
+) {
+  const prisma = client;
+
   return prisma.$transaction(async (tx) => {
     await releaseExpiredReservations(tx);
 

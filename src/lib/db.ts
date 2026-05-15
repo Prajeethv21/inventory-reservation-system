@@ -5,10 +5,18 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const prisma = global.prisma ?? new PrismaClient();
+let prismaInstance: PrismaClient | undefined;
 
-if (process.env.NODE_ENV !== "production") {
-  global.prisma = prisma;
+export function getPrisma(): PrismaClient {
+  if (!prismaInstance) {
+    prismaInstance = global.prisma ?? new PrismaClient();
+
+    if (process.env.NODE_ENV !== "production") {
+      global.prisma = prismaInstance;
+    }
+  }
+
+  return prismaInstance;
 }
 
-export default prisma;
+export default getPrisma;

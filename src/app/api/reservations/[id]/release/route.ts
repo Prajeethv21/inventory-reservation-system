@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import getPrisma from "@/lib/db";
 import { releaseReservation } from "@/lib/reservations";
 
 export async function POST(
@@ -14,7 +15,8 @@ export async function POST(
       );
     }
 
-    const result = await releaseReservation(id);
+    const prisma = getPrisma();
+    const result = await releaseReservation(id, prisma);
 
     if ("error" in result) {
       const status = result.error === "not_found" ? 404 : 409;

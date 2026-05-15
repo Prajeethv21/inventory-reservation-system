@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import getPrisma from "@/lib/db";
 import { releaseExpiredReservations } from "@/lib/reservations";
 
 export async function GET() {
   await releaseExpiredReservations();
 
+  const prisma = getPrisma();
   const products = await prisma.product.findMany({
     include: {
       stocks: {

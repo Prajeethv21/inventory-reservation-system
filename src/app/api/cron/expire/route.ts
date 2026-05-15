@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import getPrisma from "@/lib/db";
 import { releaseExpiredReservations } from "@/lib/reservations";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -22,6 +25,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
+  const prisma = getPrisma();
   const released = await prisma.$transaction(async (tx) =>
     releaseExpiredReservations(tx)
   );
