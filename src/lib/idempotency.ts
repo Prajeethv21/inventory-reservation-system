@@ -1,10 +1,20 @@
 import crypto from "crypto";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 export type IdempotencyResult = {
   statusCode: number;
   body: unknown;
 };
+
+function toInputJsonValue(value: unknown): Prisma.InputJsonValue {
+  const normalized = value === undefined || value === null ? {} : value;
+  const payload = JSON.stringify(normalized);
+  if (!payload) {
+    return {};
+  }
+  const parsed = JSON.parse(payload);
+  return parsed === null ? {} : (parsed as Prisma.InputJsonValue);
+}
 
 export function hashRequestBody(body: unknown): string {
   const payload = JSON.stringify(body ?? {});
@@ -52,7 +62,7 @@ export async function writeIdempotencyResult(
       key,
       endpoint,
       requestHash,
-      responseJson: result.body,
+      responseJson: toInputJsonValue(result.body),
       statusCode: result.statusCode,
     },
   });
