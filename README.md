@@ -2,6 +2,26 @@
 
 A Next.js App Router implementation of an inventory reservation flow for multi-warehouse checkout.
 
+## Live demo
+
+https://allo.prajeeth26intdesign.tech/
+
+## Tech stack
+
+- Next.js App Router
+- TypeScript
+- Prisma ORM
+- PostgreSQL (Neon)
+- Tailwind CSS
+- Vercel
+
+## Environment variables
+
+```env
+DATABASE_URL=
+CRON_SECRET=
+```
+
 ## Local setup
 
 1. Install dependencies:
@@ -38,6 +58,14 @@ A Next.js App Router implementation of an inventory reservation flow for multi-w
 - `POST /api/reservations/:id/confirm` - confirm reservation (410 if expired).
 - `POST /api/reservations/:id/release` - release reservation.
 - `GET /api/reservations/:id` - read reservation details (used by UI).
+
+## Reservation flow
+
+- Reserve stock with a single atomic update to prevent overselling.
+- Create a pending reservation record in the same transaction.
+- Expired pending reservations are released by lazy cleanup.
+- Confirm purchase transitions status and decrements reserved + remaining stock.
+- Release or expiry restores reserved inventory safely.
 
 ## Concurrency correctness
 
